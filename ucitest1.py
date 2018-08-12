@@ -18,8 +18,8 @@ dep = dataset[:,8]
 # feature scaling
 from sklearn.preprocessing import MinMaxScaler
 
-scalerx = MinMaxScaler()
-scalery = MinMaxScaler()
+scalerx = MinMaxScaler((0,1))
+scalery = MinMaxScaler((0,1))
 indep = scalerx.fit_transform(indep)
 dep = scalery.fit_transform(dep.reshape(-1,1))
 
@@ -32,25 +32,32 @@ from keras.layers import Dropout
 model = Sequential()
 
 # Input layer + first layer
-model.add(Dense(units = 20, activation = 'relu', input_dim = 8))
-
+model.add(Dense(units = 20, kernel_initializer="uniform", activation = 'relu', input_dim = 8))
+model.add(Dropout(rate = 0.1))
 # Second layer
-model.add(Dense(units = 20,activation = 'relu'))
-
+model.add(Dense(units = 20,kernel_initializer="uniform",activation = 'relu'))
+model.add(Dropout(rate = 0.1))
 #Third Layer
-model.add(Dense(units = 12,activation = 'relu'))
+model.add(Dense(units = 20,kernel_initializer="uniform",activation = 'relu'))
+model.add(Dropout(rate = 0.1))
 
 # Output layer
-model.add(Dense(units = 1,activation='sigmoid'))
+model.add(Dense(units = 1,kernel_initializer="uniform",activation = 'linear'))
 
 # Compiling ANN
 model.compile(optimizer = 'adam',loss = 'mean_squared_error', metrics = ['mse'])
 
 
 #%% fitting and saving model
-model.fit(indep,dep, epochs = 100, batch_size = 20, validation_split = 0.05)
+from keras.utils import plot_model
+model.fit(indep,dep, epochs = 150, batch_size = 50, validation_split = 0.02)
 model.save('test1.h5')
-#%%
-x_predict = indep[30,:].reshape(1,8)
-print(scalery.inverse_transform(model.predict(x_predict)))
+plot_model(model,to_file='model.png')
+#%% loading model
+from keras.models import load_model
+
+model = load_model('test1.h5')
+#%% making a prediction
+x_predict = model.predict(indep[127,:].reshape(1,8))
+print(scalery.inverse_transform(x_predict))
 
