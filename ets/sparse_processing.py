@@ -41,4 +41,5 @@ for row_num, row in enumerate(scaled_data):
         # Appending temp sparse row to np array
         sparse_data = np.append(sparse_data,sparse_row, axis=0)
 #%% Splitting data into training and test data
-sparse_train, sparse_test = train_test_split(sparse_data,)
+# training
+sparse_train, sparse_test = train_test_split(sparse_data, test_size = 0.2, random_state = 1)
