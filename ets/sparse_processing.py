@@ -6,6 +6,7 @@ import random
 from itertools import combinations
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
+
 #%% Data Preprocessing
 # Load data from CSV file
 data = pd.read_csv("~/Desktop/Concrete-NN/data/ets.csv", dtype=float)
@@ -40,6 +41,7 @@ for row_num, row in enumerate(scaled_data):
             sparse_row[0][index] = 0
         # Appending temp sparse row to np array
         sparse_data = np.append(sparse_data,sparse_row, axis=0)
+        
 #%% Splitting data into training and test data
 # training
 sparse_train, sparse_test = train_test_split(sparse_data, test_size = 0.2, random_state = 1)
