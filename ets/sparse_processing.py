@@ -6,7 +6,9 @@ import random
 from itertools import combinations
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
+
 #%% Data Preprocessing
+
 # Load data from CSV file
 data = pd.read_csv("~/Desktop/Concrete-NN/data/ets.csv", dtype=float)
 # Removing cost for now as it is not important
@@ -19,6 +21,7 @@ scaled_data = scaler.fit_transform(data)
 #train_data, test_data = train_test_split(scaled_data,test_size = 0.1)
 
 #%% Making Data Sparse
+
 # In order to solve the overcomplete hidden layer problem we will make our
 # data sparse by introducing 0s
 
@@ -40,6 +43,11 @@ for row_num, row in enumerate(scaled_data):
             sparse_row[0][index] = 0
         # Appending temp sparse row to np array
         sparse_data = np.append(sparse_data,sparse_row, axis=0)
+
+# releasing uneeded variables to clean up variable space
+del index, ran_num, row_num, sparse_row, combination, row, data, scaled_data
+
 #%% Splitting data into training and test data
+
 # training
 sparse_train, sparse_test = train_test_split(sparse_data, test_size = 0.2, random_state = 1)
