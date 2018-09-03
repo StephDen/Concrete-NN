@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#%% Importing required libraries
+#%% Importing required libraries for preprocessing
 import numpy as np
 import pandas as pd
 import random
@@ -17,9 +17,6 @@ data = data.drop('Cost ($/m3)',1)
 scaler = MinMaxScaler(feature_range = (0,1))
 # scaling data
 scaled_data = scaler.fit_transform(data)
-# split data into training and test set
-#train_data, test_data = train_test_split(scaled_data,test_size = 0.1)
-
 #%% Making Data Sparse
 
 # In order to solve the overcomplete hidden layer problem we will make our
@@ -51,3 +48,62 @@ del index, ran_num, row_num, sparse_row, combination, row, data, scaled_data
 
 # training
 sparse_train, sparse_test = train_test_split(sparse_data, test_size = 0.2, random_state = 1)
+
+#%% Importing required libraries for neural net creation
+import tensorflow as tf
+
+#%% Creating Model
+
+# Define model parameters
+
+# Training
+RUN_NAME = "histogram_visualization"
+LEARN_RATE = 0.001
+EPOCHS = 100
+
+# Input and Output
+NUM_INPUTS = 10
+NUM_OUTPUTS = 10
+
+# Hidden Layers
+LAYER_1 = 15
+LAYER_2 = 15
+LAYER_3 = 15
+
+# Constructing network architecture:
+
+# weight initializer: xavier
+# bias initializer: zeros
+# activiation function: relu
+
+# Input Layer
+with tf.variable_scopre('input'):
+    input_tensor = tf.placeholder(tf.float32, shape = (None, NUM_INPUTS), name = "X")
+
+# Layer 1
+with tf.variable_scope('layer_1'):
+    weights = tf.get_variable("weights1", shape = [NUM_INPUTS, LAYER_1], initializer = tf.contrib.layers.xavier_initializer())
+    biases = tf.get_variable(name = "biases1", shape = [LAYER_1], initializer = tf.zeros_initializer() )
+    layer_1_output = tf.nn.relu(tf.matmul(input_tensor, weights) + biases)
+
+# Layer 2
+with tf.variable_scope('layer_2'):
+    weights = tf.get_variable("weights2", shape=[LAYER_1, LAYER_2], initializer=tf.contrib.layers.xavier_initializer())
+    biases = tf.get_variable(name="biases2", shape=[LAYER_2], initializer=tf.zeros_initializer())
+    layer_2_output = tf.nn.relu(tf.matmul(layer_1_output, weights) + biases)
+
+# Layer 3
+with tf.variable_scope('layer_3'):
+    weights = tf.get_variable("weights3", shape=[LAYER_2, LAYER_3], initializer=tf.contrib.layers.xavier_initializer())
+    biases = tf.get_variable(name="biases3", shape=[LAYER_3], initializer=tf.zeros_initializer())
+    layer_3_output = tf.nn.relu(tf.matmul(layer_2_output, weights) + biases)
+
+# Output Layer
+with tf.variable_scope('output'):
+    weights = tf.get_variable("weights4", shape=[LAYER_3, NUM_OUTPUTS], initializer=tf.contrib.layers.xavier_initializer())
+    biases = tf.get_variable(name="biases4", shape=[NUM_OUTPUTS], initializer=tf.zeros_initializer())
+    prediction = tf.matmul(layer_3_output, weights) + biases
+    
+
+# Defining the cost function of network:
+    
