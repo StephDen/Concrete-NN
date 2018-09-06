@@ -77,7 +77,7 @@ LAYER_3 = 15
 # activiation function: relu
 
 # Input Layer
-with tf.variable_scopre('input'):
+with tf.variable_scope('input'):
     input_tensor = tf.placeholder(tf.float32, shape = (None, NUM_INPUTS), name = "X")
 
 # Layer 1
@@ -106,4 +106,22 @@ with tf.variable_scope('output'):
     
 
 # Defining the cost function of network:
+with tf.variable_scope('cost'):
+    output = tf.placeholder(tf.float32, shape=(None,NUM_OUTPUTS), name = "output")
+    cost = tf.reduce_mean(tf.squared_difference(prediction,output))
+
+#Defining the optimizer function that will run
+with tf.variable_scope('train'):
+    optimizer = tf.train.AdamOptimizer(LEARN_RATE).minimize(cost)
+    
+#%% Training & Logging model
+
+# Creating summary of network
+with tf.variable_scope('logging'):
+    tf.summary.scalar('current_cost', cost)
+    tf.summary.histogram('predicted_value', prediction)
+    summary = tf.summary.merge_all()
+    
+# Initialize a session so that we can run TensorFlow operations
+with tf.Session() as session:
     
