@@ -41,17 +41,29 @@ for row_num, row in enumerate(scaled_data):
         # Appending temp sparse row to np array
         sparse_data = np.append(sparse_data,sparse_row, axis=0)
 
-# releasing uneeded variables to clean up variable space
-del index, ran_num, row_num, sparse_row, combination, row, data, scaled_data
-
 #%% Splitting data into training and test data
 
-# training
+# Training
 sparse_train, sparse_test = train_test_split(sparse_data, test_size = 0.2, random_state = 1)
+
+# Creating validation array for training
+validate_train = np.empty((0,10))
+for row_num, row in enumerate(sparse_train):
+    inserted_row = scaled_data[int(row[10])].reshape((1,10))
+    validate_train = np.append(validate_train,inserted_row, axis = 0)
+    
+# Creating validation array for testing
+validate_test = np.empty((0,10))
+for row_num, row in enumerate(sparse_test):
+    inserted_row = scaled_data[int(row[10])].reshape((1,10))
+    validate_test = np.append(validate_test,inserted_row, axis = 0)
+
 
 #%% Importing required libraries for neural net creation
 import tensorflow as tf
 
+# Removing uneeded variables to clean up variable space
+del index, ran_num, sparse_row, combination, data, scaled_data, sparse_data, row, row_num, inserted_row
 #%% Creating Model
 
 # Define model parameters
@@ -125,3 +137,54 @@ with tf.variable_scope('logging'):
 # Initialize a session so that we can run TensorFlow operations
 with tf.Session() as session:
     
+    # Run global variable initilizer to neural network
+    session.run(tf.initialize_all_variables())
+    
+    # Creting log files
+    # Training and testing log data will be stored separatley.
+    training_writer = tf.summary.FileWriter("./logs/{}/training".format(RUN_NAME), session.graph)
+    testing_writer = tf.summary.FileWriter("./logs/{}/testing".format(RUN_NAME), session.graph)
+
+    # Run the optimizer in epochs to train the network.
+    for epoch in range(EPOCHS):
+        
+        #Feed in the training data and proceed one step of nerual network training
+        session.run(optimizer, feed_dict = {
+                    input_tensor: sparse_train[:,:-1],
+                    output: validate_train
+                })
+        
+        # Log progress every 5 epochs
+        if epoch % 5 == 0:
+            # Get the current accuracy score by running the cost operation
+            training_cost, training_summary = session.run([cost, summary], feed_dict={
+                        input_tensor: sparse_train[:,:-1], 
+                        output: validate_train
+                    })
+            testing_cost, testing_summary = session.run([cost, summary], feed_dict={
+                        input_tensor: sparse_test[:,:-1], 
+                        output: validate_test
+                    })
+            
+            # Log current training status to log files
+            training_writer.add_summary(training_summary, epoch)
+            testing_writer.add_summary(testing_summary, epoch)
+            
+            # Print the current training status to the screen
+            print("Epoch: {} - Training Cost: {}  Testing Cost: {}".format(epoch, training_cost, testing_cost))
+    
+    # Get the final accuracy scores
+    final_training_cost = session.run(cost, feed_dict={
+                input_tensor: sparse_train[:,:-1],
+                output: validate_train
+            })
+    final_testing_cost = session.run(cost, feed_dict = {
+                input_tensor: sparse_test[:,:-1],
+                output: validate_test
+            })
+    
+    print("Final Training cost: {}".format(final_training_cost))
+    print("Final Training cost: {}".format(final_testing_cost))
+
+# Launch tensorboard
+# tensorboard --logdir ./
