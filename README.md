@@ -7,7 +7,7 @@ Stacked Auto-Encoder based on the ETS ultra light-weight concrete dataset. Used 
 
 
 ## Citation
-Ouellet, J., Martel, J. L., Ouellet-Plamondon, C., & Carter, A. (2016). Predicting the compressive strength of ultralightweight concrete by an artificial neural network.
+*Ouellet, J., Martel, J. L., Ouellet-Plamondon, C., & Carter, A. (2016). Predicting the compressive strength of ultralightweight concrete by an artificial neural network.*
 
 ## Acknowledgements
 ETS Concrete Canoe Team for data.
