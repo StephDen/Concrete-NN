@@ -69,18 +69,18 @@ del index, ran_num, sparse_row, combination, data, scaled_data, sparse_data, row
 # Define model parameters
 
 # Training
-RUN_NAME = "histogram_visualization"
+RUN_NAME = "test2"
 LEARN_RATE = 0.001
-EPOCHS = 100
+EPOCHS = 200
 
 # Input and Output
 NUM_INPUTS = 10
 NUM_OUTPUTS = 10
 
 # Hidden Layers
-LAYER_1 = 15
-LAYER_2 = 15
-LAYER_3 = 15
+LAYER_1 = 20
+LAYER_2 = 20
+LAYER_3 = 20
 
 # Constructing network architecture:
 
@@ -186,5 +186,15 @@ with tf.Session() as session:
     print("Final Training cost: {}".format(final_training_cost))
     print("Final Training cost: {}".format(final_testing_cost))
 
+
+#   TODO: Create output seciton for generative model, 
+#   TODO: Prompt user for input => MinMaxScale() input => Generate Output => Reverse Transform the scaled input back into actual numbers
+    
+#    generated_mix = session.run(prediction, feed_dict={
+#                input_tensor: sparse_test[:,:-1]
+#            })
+#    print(generated_mix)
+    
+    
 # Launch tensorboard
 # tensorboard --logdir ./
