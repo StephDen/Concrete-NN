@@ -7,6 +7,9 @@ from itertools import combinations
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 
+# 
+import os
+os.chdir(os.path.dirname(os.path.abspath("Concrete-NN")))
 #%% Data Preprocessing
 
 # Load data from CSV file
@@ -66,13 +69,16 @@ import tensorflow as tf
 del index, ran_num, sparse_row, combination, data, scaled_data, sparse_data, row, row_num, inserted_row
 #%% Creating Model
 
+# Reset Model
+tf.reset_default_graph()
+
 # Define model parameters
 
 # Training
 RUN_NAME = "test2"
 LEARN_RATE = 0.001
-EPOCHS = 200
-
+EPOCHS = 175
+BATCHES = 20
 # Input and Output
 NUM_INPUTS = 10
 NUM_OUTPUTS = 10
@@ -185,15 +191,15 @@ with tf.Session() as session:
     
     print("Final Training cost: {}".format(final_training_cost))
     print("Final Training cost: {}".format(final_testing_cost))
-
+ 
 
 #   TODO: Create output seciton for generative model, 
 #   TODO: Prompt user for input => MinMaxScale() input => Generate Output => Reverse Transform the scaled input back into actual numbers
     
 #    generated_mix = session.run(prediction, feed_dict={
-#                input_tensor: sparse_test[:,:-1]
-#            })
-#    print(generated_mix)
+#               input_tensor: sparse_test[0,:-1].reshape((1,10))
+#           })
+#   print(generated_mix)
     
     
 # Launch tensorboard
