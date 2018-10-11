@@ -127,7 +127,8 @@ with tf.variable_scope('output'):
 with tf.variable_scope('cost'):
     output = tf.placeholder(tf.float32, shape=(None,NUM_OUTPUTS), name = "output")
     cost = tf.reduce_mean(tf.squared_difference(prediction,output))
-
+    #TODO update with new cost function 
+    
 #Defining the optimizer function that will run
 with tf.variable_scope('train'):
     optimizer = tf.train.AdamOptimizer(LEARN_RATE).minimize(cost)
