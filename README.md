@@ -14,6 +14,9 @@ Stacked Auto-Encoder based on the ETS ultra light-weight concrete dataset. Used 
 #### Cost Function Over Num. Epochs
 ![scalars](image/ets_scalars.JPG)
 
+#### TODO
+Implement more complex models in Keras
+
 ## Citation
 *Ouellet, J., Martel, J. L., Ouellet-Plamondon, C., & Carter, A. (2016). Predicting the compressive strength of ultralightweight concrete by an artificial neural network.*
 
