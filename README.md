@@ -6,7 +6,7 @@ Simple neural network based on the University of California Irving Concrete data
 Stacked Auto-Encoder based on the ETS ultra light-weight concrete dataset. Used as a sparse recommendation system.
 
 #### Network Diagram
-![networkdiagram](image/ets_diagram.JPG)
+![networkdiagram](image/ets_diagram.JPG = 500X500)
 
 #### Training/Testing Cost Histogram
 ![histogram](image/ets_histogram.JPG)
