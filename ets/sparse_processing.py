@@ -75,7 +75,7 @@ tf.reset_default_graph()
 # Define model parameters
 
 # Training
-RUN_NAME = "test2"
+RUN_NAME = "test3"
 LEARN_RATE = 0.001
 EPOCHS = 175
 BATCHES = 20
@@ -124,14 +124,14 @@ with tf.variable_scope('output'):
     
 
 # Defining the cost function of network:
+# TODO: Make cost function prioritize input values
 with tf.variable_scope('cost'):
-    output = tf.placeholder(tf.float32, shape=(None,NUM_OUTPUTS), name = "output")
-    cost = tf.reduce_mean(tf.squared_difference(prediction,output))
-    #TODO update with new cost function 
-    
+    true_data = tf.placeholder(tf.float32, shape=(None,NUM_OUTPUTS), name = "output")
+    cost = tf.reduce_mean(tf.pow(prediction - true_data, 2))
+
 #Defining the optimizer function that will run
 with tf.variable_scope('train'):
-    optimizer = tf.train.AdamOptimizer(LEARN_RATE).minimize(cost)
+    optimizer = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(cost)
     
 #%% Training & Logging model
 
@@ -158,7 +158,7 @@ with tf.Session() as session:
         #Feed in the training data and proceed one step of nerual network training
         session.run(optimizer, feed_dict = {
                     input_tensor: sparse_train[:,:-1],
-                    output: validate_train
+                    true_data: validate_train
                 })
         
         # Log progress every 5 epochs
@@ -166,11 +166,11 @@ with tf.Session() as session:
             # Get the current accuracy score by running the cost operation
             training_cost, training_summary = session.run([cost, summary], feed_dict={
                         input_tensor: sparse_train[:,:-1], 
-                        output: validate_train
+                        true_data: validate_train
                     })
             testing_cost, testing_summary = session.run([cost, summary], feed_dict={
                         input_tensor: sparse_test[:,:-1], 
-                        output: validate_test
+                        true_data: validate_test
                     })
             
             # Log current training status to log files
@@ -183,11 +183,11 @@ with tf.Session() as session:
     # Get the final accuracy scores
     final_training_cost = session.run(cost, feed_dict={
                 input_tensor: sparse_train[:,:-1],
-                output: validate_train
+                true_data: validate_train
             })
     final_testing_cost = session.run(cost, feed_dict = {
                 input_tensor: sparse_test[:,:-1],
-                output: validate_test
+                true_data: validate_test
             })
     
     print("Final Training cost: {}".format(final_training_cost))
@@ -205,3 +205,15 @@ with tf.Session() as session:
     
 # Launch tensorboard
 # tensorboard --logdir ./
+#%%
+saver = tf.train.Saver()
+saver.save(session, 'test3')
+
+#%%
+session = tf.Session()
+saver = tf.train.import_meta_graph('test3.meta')
+saver.restore(session, tf.train.latest_checkpoint('./'))
+
+print (session.run(prediction, feed_dict={
+           input_tensor: sparse_test[0:-1].reshape((1,10))         
+        }))
