@@ -1,6 +1,12 @@
+#%%
 import sys
 
 import numpy as np
+import pandas as pd
+import random
+from itertools import combinations
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 
 from IPython.core.debugger import Tracer
 
@@ -15,7 +21,6 @@ import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 #%%
 from keras import backened as K
-K.tensorflow_backend._get_available_gpus()
 #%%
 class GAN(object):
     
@@ -81,7 +86,26 @@ class GAN(object):
         model.add(self.D)
 
         return model
+    def train(self, data, epochs = 2000,batch = 6, sparse_clean_ratio = 0.3):
+        for epoch in range(epochs):
+            
+            # train discriminator
+            random_index = np.random.randint(0, len(data) - batch//2)
+            clean_mixes = data[random_index : random_index + batch//2]
 
+            # create sparse mixes
+            sparse_mix = []
+            for mix in clean_mixes:
+                rand_indexs = np.random.randint(0,len(mix),len(mix)//sparse_clean_ratio)
+                mix[rand_indexs] = 0
+                np.insert(sparse_mix,mix)
+            
+            synthetic_mixes = self.G.predict(sparse_mix)
+
+            combined_batch = np.concatenate((clean_mixes,synthetic_mixes))
+            mask_batch = np.concatenate((np.ones((batch/2, 1)), np.zeros((batch/2, 1))))
+
+            d_loss = self.D.train_on_batch(combined_batch, mask_batch)    
     def train(self, X_train, epochs=2000, batch = 5, save_interval = 100):
 
         for cnt in range(epochs):
@@ -133,10 +157,19 @@ class GAN(object):
             plt.show()
 #%%
 if __name__ == '__main__':
-    # Rescale -1 to 1
-    X_train = (X_train.astype(np.float32) - 127.5) / 127.5
-    X_train = np.expand_dims(X_train, axis=3)
+
+    # set random seed
+    random.seed(1)
     
+    
+    # Load data from CSV file
+    data = pd.read_csv("~/Desktop/Concrete-NN/data/ets.csv", dtype=float)
+    # Removing cost for now as it is not important
+    data = data.drop('Cost ($/m3)',1)
+    # Creating Scaler
+    scaler = MinMaxScaler(feature_range = (-1,1))
+    # scaling datas
+    scaled_data = scaler.fit_transform(data)
     
     gan = GAN()
-    gan.train()
+    gan.train(sclaed_data)
