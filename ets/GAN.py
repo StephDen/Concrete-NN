@@ -86,7 +86,9 @@ class GAN(object):
         model.add(self.D)
 
         return model
+        
     def train(self, data, epochs = 2000,batch = 6, sparse_clean_ratio = 0.3):
+        
         for epoch in range(epochs):
             
             # train discriminator
@@ -96,7 +98,7 @@ class GAN(object):
             # create sparse mixes
             sparse_mix = []
             for mix in clean_mixes:
-                rand_indexs = np.random.randint(0,len(mix),len(mix)//sparse_clean_ratio)
+                rand_indexs = np.random.randint(0,len(mix),round(len(mix)*sparse_clean_ratio))
                 mix[rand_indexs] = 0
                 np.insert(sparse_mix,mix)
             
@@ -105,56 +107,20 @@ class GAN(object):
             combined_batch = np.concatenate((clean_mixes,synthetic_mixes))
             mask_batch = np.concatenate((np.ones((batch/2, 1)), np.zeros((batch/2, 1))))
 
-            d_loss = self.D.train_on_batch(combined_batch, mask_batch)    
-    def train(self, X_train, epochs=2000, batch = 5, save_interval = 100):
-
-        for cnt in range(epochs):
-
-            ## train discriminator
-            random_index =  np.random.randint(0, len(X_train) - batch/2)
-            legit_images = X_train[random_index : random_index + batch/2].reshape(batch/2, self.WIDTH, self.HEIGHT, self.CHANNELS)
-
-            gen_noise = np.random.normal(0, 1, (batch/2,100))
-            syntetic_images = self.G.predict(gen_noise)
-
-            x_combined_batch = np.concatenate((legit_images, syntetic_images))
-            y_combined_batch = np.concatenate((np.ones((batch/2, 1)), np.zeros((batch/2, 1))))
-
-            d_loss = self.D.train_on_batch(x_combined_batch, y_combined_batch)
+            d_loss = self.D.train_on_batch(combined_batch, mask_batch)
 
             # train generator
+            random_index = np.random.randint(0, len(data), size = (1,batch))
+            sparse_mix = []
+            for mix in data[random_index]:
+                rand_indexs = np.random.randint(0,len(mix),round(len(mix)*sparse_clean_ratio))
+                mix[rand_indexs] = 0
+                np.insert(sparse_mix,mix)
+            y_label = np.ones((batch,1))
 
-            noise = np.random.normal(0, 1, (batch,100))
-            y_mislabled = np.ones((batch, 1))
-
-            g_loss = self.stacked_G_D.train_on_batch(noise, y_mislabled)
+            g_loss = self.stacked_G_D.train_on_batch(noise,y_label)
 
             print ('epoch: %d, [Discriminator :: d_loss: %f], [ Generator :: loss: %f]' % (cnt, d_loss[0], g_loss))
-
-            if cnt % save_interval == 0 : 
-                self.plot_images(save2file=True, step=cnt)
-
-    def plot_images(self, save2file=False,  samples=16, step=0):
-        filename = "./images/mnist_%d.png" % step
-        noise = np.random.normal(0, 1, (samples,100))
-
-        images = self.G.predict(noise)
-
-        plt.figure(figsize=(10,10))
-
-        for i in range(images.shape[0]):
-            plt.subplot(4, 4, i+1)
-            image = images[i, :, :, :]
-            image = np.reshape(image, [ self.HEIGHT, self.WIDTH ])
-            plt.imshow(image, cmap='gray')
-            plt.axis('off')
-        plt.tight_layout()
-
-        if save2file:
-            plt.savefig(filename)
-            plt.close('all')
-        else:
-            plt.show()
 #%%
 if __name__ == '__main__':
 
@@ -172,4 +138,6 @@ if __name__ == '__main__':
     scaled_data = scaler.fit_transform(data)
     
     gan = GAN()
-    gan.train(sclaed_data)
+    gan.train(scaled_data)
+
+#%%
