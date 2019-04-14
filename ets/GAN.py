@@ -12,8 +12,6 @@ from keras.optimizers import Adam, RMSprop
 
 import matplotlib.pyplot as plt
 #%%
-#from keras import backened as K
-#%%
 class GAN(object):
     
     def __init__(self, height= 10, channels = 1):
@@ -69,8 +67,13 @@ class GAN(object):
         model.add(Flatten(input_shape=self.SHAPE))
         model.add(Dense((self.HEIGHT * self.CHANNELS), input_shape=self.SHAPE))
         model.add(LeakyReLU(alpha=0.2))
+
         model.add(Dense(np.int64((self.HEIGHT * self.CHANNELS)/2)))
         model.add(LeakyReLU(alpha=0.2))
+
+        model.add(Dense(np.int64((self.HEIGHT * self.CHANNELS)/2)))
+        model.add(LeakyReLU(alpha=0.2))
+
         model.add(Dense(1, activation='sigmoid'))
         model.summary()
 
@@ -92,7 +95,7 @@ class GAN(object):
             # train discriminator
             random_index = np.random.randint(0, len(data) - batch//2)
             clean_mixes = data[random_index : random_index + batch//2]
-
+            
             # create sparse mixes
             sparse_mix = clean_mixes
             for mix in sparse_mix:
@@ -121,8 +124,8 @@ class GAN(object):
             g_loss = self.stacked_G_D.train_on_batch(np.squeeze(sparse_mix),y_label)
 
             self.G_loss.append(g_loss)
-            self.D_C_loss.append(d_loss_clean)
-            self.D_S_loss.append(d_loss_synthetic)
+            self.D_C_loss.append(d_loss_clean[0])
+            self.D_S_loss.append(d_loss_synthetic[0])
             print ('epoch: %d, [Discriminator :: loss: %f,%f], [ Generator :: loss: %f]' % (epoch, d_loss_clean[0],d_loss_synthetic[0], g_loss))
     def plot(self):
         import matplotlib.pyplot as plt
@@ -132,11 +135,15 @@ class GAN(object):
         ax = plt.axes()
 
         x = range(self.EPOCHS)
-        ax.plot(x,self.G_loss, color = 'orange')
-        ax.plot(x,self.D_C_loss, 'b-', alpha = 0.5)
-        ax.plot(x,self.D_S_loss, 'g-', alpha = 0.5)
+        ax.plot(x,self.G_loss, color = 'orange', label = "Generator")
+        ax.plot(x,self.D_C_loss, 'b-', alpha = 0.5, label = "Discriminator - Clean")
+        ax.plot(x,self.D_S_loss, 'g-', alpha = 0.5, label = "Discriminator - Synthetic")
+        ax.legend(loc = 'center left',bbox_to_anchor=(1,0.5))
+        ax.set_xlabel("Epoch")
+        ax.set_ylabel("Loss")
         plt.show()
-#%%
+ #%%
+
 if __name__ == '__main__':
 
     # set random seed
@@ -151,11 +158,11 @@ if __name__ == '__main__':
     scaler = MinMaxScaler(feature_range = (-1,1))
     # scaling datas
     scaled_data = scaler.fit_transform(data)
-    np.random.shuffle(scaled_data)
-
+    #np.random.shuffle(scaled_data)
     gan = GAN()
-    gan.train(scaled_data, epochs=5000,batch = 4,sparse_clean_ratio=0.2)
-    gan.plot()
+    gan.train(scaled_data, epochs=1000,batch = 6,sparse_clean_ratio=0.2)
 #%%
-    from keras.utils import plot_model
-    plot_model(gan, to_file='model.png')
+gan.plot()
+from keras.utils import plot_model
+plot_model(gan.G, to_file='gen.png')
+plot_model(gan.D, to_file='dis.png')
